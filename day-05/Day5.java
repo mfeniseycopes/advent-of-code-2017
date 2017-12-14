@@ -10,6 +10,7 @@ public class Day5 {
     System.out.println(travel(jumps));
     
     // part 2
+    System.out.println(travelOddly(jumps));
 
   }
 
@@ -41,6 +42,25 @@ public class Day5 {
     while (pos < jumps.size()) {
       jump = jumps.get(pos);
       jumps.set(pos, jump + 1);
+      pos = pos + jump;
+      numJumps++;
+    }
+
+    return numJumps;
+  }
+  
+  public static int travelOddly(List<Integer> jumps) {
+    int numJumps = 0;
+    int pos = 0;
+    int jump;
+
+    while (pos < jumps.size()) {
+      jump = (int)jumps.get(pos);
+      if (jump >= 3) {
+        jumps.set(pos, jump - 1);
+      } else {
+        jumps.set(pos, jump + 1);
+      }
       pos = pos + jump;
       numJumps++;
     }
