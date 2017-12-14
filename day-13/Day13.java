@@ -8,7 +8,9 @@ public class Day13 {
 
     // part 1
     System.out.println(calculateSeverity(layers));
-  
+
+    // part 2
+    System.out.println(minimumDelay(layers));
   }
 
   public static List<Layer> readInput(String filename) {
@@ -25,7 +27,7 @@ public class Day13 {
         range = Integer.parseInt(split[1]);
         if (depth > layers.size()) {
           for (int i = layers.size(); i < depth; i++) {
-            layers.add(new Layer(i, 0));
+            layers.add(null);
           }
         }
         layers.add(new Layer(depth, range));
@@ -39,41 +41,99 @@ public class Day13 {
     return layers;
   }
 
-  public static void moveScanners(List<Layer> layers) {
+  public static void moveScanners(List<Layer> layers, int pos) {
     Layer layer;
 
-    for (int i = 0; i < layers.size(); i++) {
+    for (int i = pos; i < layers.size(); i++) {
       layer = layers.get(i);
 
-      layer.pos += layer.shift; 
+      if (layer != null) {
+        layer.pos += layer.shift; 
       
-      if (layer.pos == 1 || layer.pos == layer.range) {
-        layer.shift = -1 * layer.shift; 
-      }
-
-      if (layer.pos == 0 || layer.pos > layer.range) {
-        layer.pos = 1;
+        if (layer.pos == 1 || layer.pos == layer.range) {
+          layer.shift = (-1 * layer.shift); 
+        }
       }
     }
+  }
+
+  public static void moveN(Layer layer, int n) {
+    if (layer == null) return;
+
+    int offset = n % (layer.range - 1);
+    boolean fromTop = (n / (layer.range - 1) % 2) == 0;
+    
+    if (fromTop) {
+      layer.pos = offset + 1;
+    } else {
+      layer.pos = layer.range - offset;
+      layer.shift = -1; 
+    }
+  }
+
+  public static boolean caught(List<Layer> layers, int delay) {
+    int pos = 0;
+
+    for (int i = 0; i < layers.size(); i++) {
+      Layer layer = layers.get(i);
+      if (layer != null) {
+        layer.pos = 1;
+        layer.shift = 1;
+      }
+    }
+
+    for (int i = 0; i < layers.size(); i++) {
+      moveN(layers.get(i), delay);
+    }
+
+    while (pos < layers.size()) {
+      Layer layer = layers.get(pos);
+
+      if (layer != null && layer.pos == 1) {
+        return true;
+      }
+
+      moveScanners(layers, pos);
+      pos++;
+    }
+
+    return false;
   }
 
   public static int calculateSeverity(List<Layer> layers) {
     int pos = 0;
     int severity = 0;
-    Layer layer;
+
+    for (int i = 0; i < layers.size(); i++) {
+      Layer layer = layers.get(i);
+      if (layer != null) {
+        layer.pos = 1;
+        layer.shift = 1;
+      }
+    }
 
     while (pos < layers.size()) {
-      layer = layers.get(pos);
+      Layer layer = layers.get(pos);
 
-      if (layer.pos == 1) {
+      if (layer != null && layer.pos == 1) {
         severity += (layer.depth * layer.range);
       }
 
-      moveScanners(layers);
+      moveScanners(layers, pos);
       pos++;
     }
-  
+
     return severity;
+  }
+
+  public static int minimumDelay(List<Layer> layers) {
+    int delay = 0;
+
+    while (caught(layers, delay)) {
+      delay++;
+    }
+
+    return delay; 
   }
 }
 
